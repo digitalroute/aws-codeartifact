@@ -1,0 +1,67 @@
+{
+  "name": "@digitalroute/aws-codeartifact",
+  "version": "0.0.0-semantically-released",
+  "homepage": "https://github.com/digitalroute/aws-codeartifact",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/digitalroute/aws-codeartifact.git"
+  },
+  "engines": {
+    "node": ">=10.18.0"
+  },
+  "description": "Do AWS CodeArtifact logins",
+  "main": "src/index.js",
+  "bin": {
+    "aws-codeartifact": "src/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\"",
+    "commit": "git-cz",
+    "semantic-release": "semantic-release",
+    "prettier": "prettier --write --list-different \"**/*.{js,ts,json,md,yml}\""
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "devDependencies": {
+    "@digitalroute/prettier-config": "^1.4.0",
+    "commitizen": "^4.2.3",
+    "@digitalroute/cz-conventional-changelog-for-jira": "^6.3.0",
+    "husky": "^5.1.3",
+    "lint-staged": "^10.5.4",
+    "prettier": "^2.0.5",
+    "semantic-release": "^17.4.2"
+  },
+  "keywords": [
+    "aws",
+    "codeartifact",
+    "nodejs",
+    "npm"
+  ],
+  "author": "Marcus Johansson <polarn@gmail.com>",
+  "license": "MIT",
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/@digitalroute/cz-conventional-changelog-for-jira",
+      "jiraMode": false
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm-run-all --serial lint-staged update-docs"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,js,json,md,yml}": [
+      "prettier --write"
+    ]
+  },
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/npm"
+    ]
+  }
+}
