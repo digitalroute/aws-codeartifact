@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const util = require('util');
-const exec = util.promisify(require('child_process').exec);
 const fs = require('fs')
 const readline = require('readline');
+const { login } = require('./codeartifact.js');
+
 const package = require( process.cwd() + "/package.json" );
 
 if (!package.config.awsCodeArtifact) {
@@ -18,30 +18,10 @@ if (!codeArtifactDomain) {
   console.error('Missing domain config in awsCodeArtifact');
   process.exit(1);
 }
+
 if (!codeArtifactRepository) {
   console.error('Missing repository config in awsCodeArtifact');
   process.exit(1);
-}
-
-async function runShellCommand(command, mask='') {
-  if (mask) {
-    console.log(`running: ${command.replace(mask, '<masked>')}`);
-  } else {
-    console.log(`running: ${command}`);
-  }
-
-  try {
-    const { stdout, stderr } = await exec(command);
-    if (stdout) {
-      console.log('stdout:', stdout);
-    }
-    if (stderr) {
-      console.log('stderr:', stderr);
-    }
-  } catch (e) {
-    console.error(e); // should contain code (exit code) and signal (that caused the termination).
-    process.exit(1);
-  }
 }
 
 async function processArg(arg) {
@@ -49,8 +29,7 @@ async function processArg(arg) {
 
   switch (arg) {
     case 'login':
-      const namespaceString = codeArtifactScope ? `--namespace ${codeArtifactScope}` : ""
-      await runShellCommand(`aws codeartifact login --tool npm ${namespaceString} --repository ${codeArtifactRepository} --domain ${codeArtifactDomain}`)
+      await login(codeArtifactDomain, codeArtifactRepository, codeArtifactScope);
       break;
 
     // Uses CODEARTIFACT_AUTH_TOKEN if set otherwise tries to get it fron ~/.npmrc
