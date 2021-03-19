@@ -2,8 +2,8 @@
 
 An npm module for using AWS CodeArtifact a little easier
 
-[![npm version](https://img.shields.io/npm/v/@digitalroute/aws-codeartifact.svg?style=flat-square)](https://www.npmjs.org/package/@digitalroute/aws-codeartifact)
-[![npm downloads](https://img.shields.io/npm/dm/@digitalroute/aws-codeartifact.svg?style=flat-square)](http://npm-stat.com/charts.html?package=@digitalroute/aws-codeartifact&from=2015-08-01)
+[![npm version](https://img.shields.io/npm/v/aws-codeartifact.svg?style=flat-square)](https://www.npmjs.org/package/aws-codeartifact)
+[![npm downloads](https://img.shields.io/npm/dm/aws-codeartifact.svg?style=flat-square)](http://npm-stat.com/charts.html?package=aws-codeartifact&from=2015-08-01)
 
 ## Features
 
@@ -21,17 +21,17 @@ Add the following to package.json:
 ```json
 {
   "scripts": {
-    "codeartifact": "npx --package @digitalroute/aws-codeartifact@^1.0.0 aws-codeartifact",
+    "codeartifact": "npx --package aws-codeartifact@^1.0.0 aws-codeartifact",
     "co:login": "AWS_PROFILE=<profile> npm run codeartifact login",
     "co:npm-local-config": "npm run codeartifact npm-local-config"
 },
   "awsCodeArtifact": {
-    "domain": "digitalroute",
-    "repository": "dazzler",
-    "namespace": "digitalroute",
+    "domain": "<domain-in-aws-codeartifact>",
+    "repository": "<repository-in-codeartifact>",
+    "namespace": "<scope>",
     "npm": {
-      "registry": "https://digitalroute-812206349901.d.codeartifact.eu-west-1.amazonaws.com/npm/dazzler/",
-      "scope": "@digitalroute"
+      "registry": "https://<domain>-<aws-accounnt-id>.d.codeartifact.<aws-region>.amazonaws.com/npm/<repository>/",
+      "scope": "<scope-with-at-sign>"
     }
   },
 }
