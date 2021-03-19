@@ -39,7 +39,7 @@ async function processArg(arg) {
 
   switch (arg) {
     case 'login':
-      const {domain, repository, namespace} = awsCodeArtifact;
+      const {domain, repository, scope} = awsCodeArtifact;
       if (!domain) {
         console.error('Missing domain config in awsCodeArtifact');
         process.exit(1);
@@ -49,23 +49,16 @@ async function processArg(arg) {
         process.exit(1);
       }
 
-      const namespaceString = namespace ? `--namespace ${namespace}` : ""
+      const namespaceString = scope ? `--namespace ${scope}` : ""
       await runShellCommand(`aws codeartifact login --tool npm ${namespaceString} --repository ${repository} --domain ${domain}`)
       break;
 
     // Uses CODEARTIFACT_AUTH_TOKEN if set otherwise tries to get it fron ~/.npmrc
-    case 'npm-local-config':
-      const { npm } = awsCodeArtifact;
-      if (!npm) {
-        console.error('Missing npm block in awsCodeArtifact');
-        process.exit(1);
-      }
+    case 'npm-project-config':
+      const {domain, repository, scope, accountId, region} = awsCodeArtifact;
 
-      const { registry, scope } = npm;
-      if (!registry) {
-        console.error('Missing registry config in npm block');
-        process.exit(1);
-      }
+      const registryWithoutProtocol = `//${domain}-${accountId}.d.codeartifact.${region}.amazonaws.com/npm/${repository}/`;
+      const registry = `https:${registryWithoutProtocol}`;
 
       if (scope) {
         await runShellCommand(`npm config set ${scope}:registry ${registry} --userconfig .npmrc`);
@@ -73,7 +66,6 @@ async function processArg(arg) {
         await runShellCommand(`npm config set registry ${registry} --userconfig .npmrc`);
       }
 
-      const registryWithoutProtocol = registry.replace(/^https:|^http:/gi, '');
       await runShellCommand(`npm config set ${registryWithoutProtocol}:always-auth true --userconfig .npmrc`);
 
       if (process.env.CODEARTIFACT_AUTH_TOKEN) {
