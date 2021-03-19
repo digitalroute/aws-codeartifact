@@ -12,6 +12,16 @@ if (!package.config.awsCodeArtifact) {
 }
 
 const awsCodeArtifact = package.config.awsCodeArtifact;
+const {domain: codeArtifactDomain, repository: codeArtifactRepository, scope: codeArtifactScope, accountId: codeArticactAccountId, region: codeArticactRegion} = awsCodeArtifact;
+
+if (!codeArtifactDomain) {
+  console.error('Missing domain config in awsCodeArtifact');
+  process.exit(1);
+}
+if (!codeArtifactRepository) {
+  console.error('Missing repository config in awsCodeArtifact');
+  process.exit(1);
+}
 
 async function runShellCommand(command, mask='') {
   if (mask) {
@@ -39,29 +49,18 @@ async function processArg(arg) {
 
   switch (arg) {
     case 'login':
-      const {domain, repository, scope} = awsCodeArtifact;
-      if (!domain) {
-        console.error('Missing domain config in awsCodeArtifact');
-        process.exit(1);
-      }
-      if (!repository) {
-        console.error('Missing repository config in awsCodeArtifact');
-        process.exit(1);
-      }
-
-      const namespaceString = scope ? `--namespace ${scope}` : ""
-      await runShellCommand(`aws codeartifact login --tool npm ${namespaceString} --repository ${repository} --domain ${domain}`)
+      const namespaceString = codeArtifactScope ? `--namespace ${codeArtifactScope}` : ""
+      await runShellCommand(`aws codeartifact login --tool npm ${namespaceString} --repository ${codeArtifactRepository} --domain ${codeArtifactDomain}`)
       break;
 
     // Uses CODEARTIFACT_AUTH_TOKEN if set otherwise tries to get it fron ~/.npmrc
     case 'npm-project-config':
-      const {domain, repository, scope, accountId, region} = awsCodeArtifact;
 
-      const registryWithoutProtocol = `//${domain}-${accountId}.d.codeartifact.${region}.amazonaws.com/npm/${repository}/`;
+      const registryWithoutProtocol = `//${codeArtifactDomain}-${codeArticactAccountId}.d.codeartifact.${codeArticactRegion}.amazonaws.com/npm/${codeArtifactRepository}/`;
       const registry = `https:${registryWithoutProtocol}`;
 
-      if (scope) {
-        await runShellCommand(`npm config set ${scope}:registry ${registry} --userconfig .npmrc`);
+      if (codeArtifactScope) {
+        await runShellCommand(`npm config set ${codeArtifactScope}:registry ${registry} --userconfig .npmrc`);
       } else {
         await runShellCommand(`npm config set registry ${registry} --userconfig .npmrc`);
       }
