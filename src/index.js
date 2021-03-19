@@ -2,6 +2,8 @@
 
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+const fs = require('fs')
+const readline = require('readline');
 const package = require( process.cwd() + "/package.json" );
 
 if (!package.awsCodeArtifact) {
@@ -11,12 +13,21 @@ if (!package.awsCodeArtifact) {
 
 const awsCodeArtifact = package.awsCodeArtifact;
 
-async function runShellCommand(command) {
-  console.log(`running: ${command}`);
+async function runShellCommand(command, mask='') {
+  if (mask) {
+    console.log(`running: ${command.replace(mask, '<masked>')}`);
+  } else {
+    console.log(`running: ${command}`);
+  }
+
   try {
     const { stdout, stderr } = await exec(command);
-    console.log('stdout:', stdout);
-    console.log('stderr:', stderr);
+    if (stdout) {
+      console.log('stdout:', stdout);
+    }
+    if (stderr) {
+      console.log('stderr:', stderr);
+    }
   } catch (e) {
     console.error(e); // should contain code (exit code) and signal (that caused the termination).
     process.exit(1);
@@ -42,7 +53,7 @@ async function processArg(arg) {
       await runShellCommand(`aws codeartifact login --tool npm ${namespaceString} --repository ${repository} --domain ${domain}`)
       break;
 
-    case 'npm-global-config':
+    // Uses CODEARTIFACT_AUTH_TOKEN if set otherwise tries to get it fron ~/.npmrc
     case 'npm-local-config':
       const { npm } = awsCodeArtifact;
       if (!npm) {
@@ -56,24 +67,47 @@ async function processArg(arg) {
         process.exit(1);
       }
 
-      const userConfig = arg === 'npm-local-config' ? '--userconfig .npmrc' : ''
-
       if (scope) {
-        await runShellCommand(`npm config set ${scope}:registry ${registry} ${userConfig}`);
+        await runShellCommand(`npm config set ${scope}:registry ${registry} --userconfig .npmrc`);
       } else {
-        await runShellCommand(`npm config set registry ${registry} ${userConfig}`);
+        await runShellCommand(`npm config set registry ${registry} --userconfig .npmrc`);
       }
 
       const registryWithoutProtocol = registry.replace(/^https:|^http:/gi, '');
-      await runShellCommand(`npm config set ${registryWithoutProtocol}:always-auth true ${userConfig}`);
-      await runShellCommand(`npm config set ${registryWithoutProtocol}:_authToken \${CODEARTIFACT_AUTH_TOKEN} ${userConfig}`);
+      await runShellCommand(`npm config set ${registryWithoutProtocol}:always-auth true --userconfig .npmrc`);
 
+      if (process.env.CODEARTIFACT_AUTH_TOKEN) {
+        await runShellCommand(`npm config set ${registryWithoutProtocol}:_authToken \${CODEARTIFACT_AUTH_TOKEN} --userconfig .npmrc`);
+      } else {
+        const home = process.env.HOME;
+        const nodeRcFile=`${home}/.npmrc`;
+        const rl = readline.createInterface({
+          input: fs.createReadStream(nodeRcFile),
+          output: process.stdout,
+          terminal: false
+        });
+
+        let token='';
+        const myReg = new RegExp(`^${registryWithoutProtocol}:_authToken=(.*)`);
+        for await (const line of rl) {
+          const myMatch = line.match(myReg)
+          if (myMatch) {
+            token = myMatch[1];
+          }
+        }
+
+        if (token !== '') {
+          await runShellCommand(`npm config set ${registryWithoutProtocol}:_authToken ${token} --userconfig .npmrc`, token);
+        }
+
+      }
       break;
 
     default:
       console.log(`Command not found: ${command}.`);
   }
 }
+
 
 const arg = process.argv[2] ? process.argv[2] : "default"
 processArg(arg);

@@ -12,21 +12,19 @@ An npm module for using AWS CodeArtifact a little easier
 
 ## Quickstart
 
-### Installation
+### Usage
 
-```bash
-npm install --save-dev @digitalroute/aws-codeartifact
-```
+The idea is to not actually install this because it will not be usable in npm scripts if it first needs to be installed and then we have modules that needs the AWS CodeArtifact token already set. So we use `npx` instead...
 
-and then add the following to package.json:
+Add the following to package.json:
 
 ```json
 {
   "scripts": {
-    "ca:login": "aws-codeartifact login",
-    "ca:npm-global-config": "aws-codeartifact npm-global-config",
-    "ca:npm-local-config": "aws-codeartifact npm-local-config"
-  },
+    "codeartifact": "npx --package @digitalroute/aws-codeartifact@^1.0.0 aws-codeartifact",
+    "co:login": "AWS_PROFILE=<profile> npm run codeartifact login",
+    "co:npm-local-config": "npm run codeartifact npm-local-config"
+},
   "awsCodeArtifact": {
     "domain": "digitalroute",
     "repository": "dazzler",
@@ -39,4 +37,6 @@ and then add the following to package.json:
 }
 ```
 
-The `npm` part is used to create local config, i.e for `.npmrc` in a repo.
+The `npm` part is used to create local config, i.e for `.npmrc` in the repo.
+
+Now you can use `npm run co:npm-local-config` in your CI if you have `CODEARTIFACT_AUTH_TOKEN` set as enviromnent variable or `npm run co:login` if you have AWS credentials set.
