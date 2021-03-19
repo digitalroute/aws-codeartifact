@@ -60,7 +60,7 @@ async function processArg(arg) {
       const registry = `https:${registryWithoutProtocol}`;
 
       if (codeArtifactScope) {
-        await runShellCommand(`npm config set ${codeArtifactScope}:registry ${registry} --userconfig .npmrc`);
+        await runShellCommand(`npm config set @${codeArtifactScope}:registry ${registry} --userconfig .npmrc`);
       } else {
         await runShellCommand(`npm config set registry ${registry} --userconfig .npmrc`);
       }
