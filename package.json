@@ -66,9 +66,5 @@
       "@semantic-release/npm"
     ]
   },
-  "dependencies": {
-    "@aws-sdk/client-codeartifact": "^3.8.1",
-    "@aws-sdk/client-sts": "^3.8.1",
-    "@aws-sdk/credential-provider-node": "^3.8.0"
-  }
+  "dependencies": {}
 }

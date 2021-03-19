@@ -6,12 +6,12 @@ const fs = require('fs')
 const readline = require('readline');
 const package = require( process.cwd() + "/package.json" );
 
-if (!package.awsCodeArtifact) {
+if (!package.config.awsCodeArtifact) {
     console.error('No awsCodeArtifact config found');
     process.exit(1);
 }
 
-const awsCodeArtifact = package.awsCodeArtifact;
+const awsCodeArtifact = package.config.awsCodeArtifact;
 
 async function runShellCommand(command, mask='') {
   if (mask) {
