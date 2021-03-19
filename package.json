@@ -1,5 +1,5 @@
 {
-  "name": "@digitalroute/aws-codeartifact",
+  "name": "aws-codeartifact",
   "version": "0.0.0-semantically-released",
   "homepage": "https://github.com/digitalroute/aws-codeartifact",
   "repository": {
@@ -65,5 +65,6 @@
       "@semantic-release/release-notes-generator",
       "@semantic-release/npm"
     ]
-  }
+  },
+  "dependencies": {}
 }

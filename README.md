@@ -1,9 +1,9 @@
 # aws-codeartifact
 
-An npm module for using AWS CodeArtifact a little easier
+An npm module for using AWS CodeArtifact a little easier. Idea is to be able to configure AWS CodeArtifact in `package.json`.
 
-[![npm version](https://img.shields.io/npm/v/@digitalroute/aws-codeartifact.svg?style=flat-square)](https://www.npmjs.org/package/@digitalroute/aws-codeartifact)
-[![npm downloads](https://img.shields.io/npm/dm/@digitalroute/aws-codeartifact.svg?style=flat-square)](http://npm-stat.com/charts.html?package=@digitalroute/aws-codeartifact&from=2015-08-01)
+[![npm version](https://img.shields.io/npm/v/aws-codeartifact.svg?style=flat-square)](https://www.npmjs.org/package/aws-codeartifact)
+[![npm downloads](https://img.shields.io/npm/dm/aws-codeartifact.svg?style=flat-square)](http://npm-stat.com/charts.html?package=aws-codeartifact&from=2015-08-01)
 
 ## Features
 
@@ -12,31 +12,46 @@ An npm module for using AWS CodeArtifact a little easier
 
 ## Quickstart
 
-### Installation
+### Usage
 
-```bash
-npm install --save-dev @digitalroute/aws-codeartifact
-```
+You can install it as a dev dependency to use it in your CI for example, but it will be like the chicken and the egg if you want to use it for logging in to AWS CodeArtifact since the module will not be installed until after `npm install` and you propably need to log in before running that... So, instead, either use the normal aws command for logging in or use npx. We can take advantage of the npm config even for the static aws command, see `co:login` below.
 
-and then add the following to package.json:
+Add the following to package.json:
 
 ```json
 {
   "scripts": {
-    "ca:login": "aws-codeartifact login",
-    "ca:npm-global-config": "aws-codeartifact npm-global-config",
-    "ca:npm-local-config": "aws-codeartifact npm-local-config"
-  },
-  "awsCodeArtifact": {
-    "domain": "digitalroute",
-    "repository": "dazzler",
-    "namespace": "digitalroute",
-    "npm": {
-      "registry": "https://digitalroute-812206349901.d.codeartifact.eu-west-1.amazonaws.com/npm/dazzler/",
-      "scope": "@digitalroute"
+    "co:login": "AWS_PROFILE=<aws-profile> aws codeartifact login --tool npm --namespace ${npm_package_config_awsCodeArtifact_scope} --repository ${npm_package_config_awsCodeArtifact_repository} --domain ${npm_package_config_awsCodeArtifact_domain}",
+    "co:login-npx": "AWS_PROFILE=<profile> npx aws-codeartifact login",
+    "codeartifact:npm-project-config": "aws-codeartifact npm-project-config"
+},
+  "config": {
+    "awsCodeArtifact": {
+      "domain": "<domain-in-aws-codeartifact>",
+      "repository": "<repository-in-codeartifact>",
+      "scope": "<scope>",
+      "region": "<aws-region>",
+      "accountId": "<aws-account-id>"
     }
   },
 }
 ```
 
-The `npm` part is used to create local config, i.e for `.npmrc` in a repo.
+One binary will be installed called `aws-codeartifact`. It has two "commands":
+
+#### Login
+
+Use to do the AWS CodeArtifact login, will put the login info in `~/.npmrc`. As explained above with the chickend and egg analogy, it is not possible to use this as an npm script, since the module is not installed. You could install the module globally but not sure that is very beneficial, at least in our organisation we want to not having developers installing a lot of things globally.
+
+```bash
+aws-codeartifact login
+```
+
+#### npm-project-config
+
+Will try to make a local project config (`.npmrc`) for AWS CodeArtifact. Will use `CODEARTIFACT_AUTH_TOKEN` environment variable as the login token if set, otherwise it will try to parse it from `~/.npmrc`.
+
+```bash
+aws-codeartifact npm-project-config
+```
+
