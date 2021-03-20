@@ -14,7 +14,7 @@ An npm module for using AWS CodeArtifact a little easier. Idea is to be able to 
 
 ### Usage
 
-You can install it as a dev dependency to use it in your CI for example, but it will be like the chicken and the egg if you want to use it for logging in to AWS CodeArtifact since the module will not be installed until after `npm install` and you propably need to log in before running that... So, instead, either use the normal aws command for logging in or use npx. We can take advantage of the npm config even for the static aws command, see `co:login` below.
+You can install it as a dev dependency to use it in your CI for example, but it will be like the chicken and the egg if you want to use it for login to AWS CodeArtifact since the module will not be installed until after `npm install` and you propably need to log in before running that... So, instead, either use the normal aws command for logging in or use npx. We can take advantage of the npm config even for the static aws command, see `co:login` below.
 
 Add the following to package.json:
 
@@ -23,7 +23,8 @@ Add the following to package.json:
   "scripts": {
     "co:login": "AWS_PROFILE=<aws-profile> aws codeartifact login --tool npm --namespace ${npm_package_config_awsCodeArtifact_scope} --repository ${npm_package_config_awsCodeArtifact_repository} --domain ${npm_package_config_awsCodeArtifact_domain}",
     "co:login-npx": "AWS_PROFILE=<profile> npx aws-codeartifact login",
-    "codeartifact:npm-project-config": "aws-codeartifact npm-project-config"
+    "codeartifact:registry-copy-token": "aws-codeartifact registry-copy-token",
+    "codeartifact:registry-aws-token": "aws-codeartifact registry-aws-token"
 },
   "config": {
     "awsCodeArtifact": {
@@ -47,11 +48,19 @@ Use to do the AWS CodeArtifact login, will put the login info in `~/.npmrc`. As 
 aws-codeartifact login
 ```
 
-#### npm-project-config
+#### registry-copy-token
 
-Will try to make a local project config (`.npmrc`) for AWS CodeArtifact. Will use `CODEARTIFACT_AUTH_TOKEN` environment variable as the login token if set, otherwise it will try to parse it from `~/.npmrc`.
+Will try to create or update a local project config (`.npmrc`) for AWS CodeArtifact. Will use `CODEARTIFACT_AUTH_TOKEN` environment variable as the login token if set, otherwise it will try to parse it from `~/.npmrc`.
 
 ```bash
-aws-codeartifact npm-project-config
+aws-codeartifact registry-copy-token
+```
+
+#### registry-aws-token
+
+Will try to create or update a local project config (`.npmrc`) for AWS CodeArtifact. Will try to get a new token from AWS using aws cli.
+
+```bash
+aws-codeartifact registry-aws-token
 ```
 
