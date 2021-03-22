@@ -34,7 +34,7 @@ function getRegistry(domain, repository, accountId, region) {
   return 'https:' + getRegistryWithoutProtocol(domain, repository, accountId, region);
 }
 
-async function setRegistry(domain, repository, scope, accountId, region) {
+async function setNpmRegistry(domain, repository, scope, accountId, region) {
   const registry = getRegistry(domain, repository, accountId, region);
   if (scope) {
     await runShellCommand(`npm config set @${scope}:registry ${registry} ${userConfig}`);
@@ -43,14 +43,32 @@ async function setRegistry(domain, repository, scope, accountId, region) {
   }
 }
 
-async function setAlwaysAuth(domain, repository, accountId, region) {
+async function deleteNpmRegistry(scope) {
+  if (scope) {
+    await runShellCommand(`npm config delete @${scope}:registry ${userConfig}`);
+  } else {
+    await runShellCommand(`npm config delete registry ${userConfig}`);
+  }
+}
+
+async function setNpmAlwaysAuth(domain, repository, accountId, region) {
   const registryWithoutProtocol = getRegistryWithoutProtocol(domain, repository, accountId, region);
   await runShellCommand(`npm config set ${registryWithoutProtocol}:always-auth true ${userConfig}`);
 }
 
-async function setToken(domain, repository, accountId, region, token) {
+async function deleteNpmAlwaysAuth(domain, repository, accountId, region) {
+  const registryWithoutProtocol = getRegistryWithoutProtocol(domain, repository, accountId, region);
+  await runShellCommand(`npm config delete ${registryWithoutProtocol}:always-auth ${userConfig}`);
+}
+
+async function setNpmToken(domain, repository, accountId, region, token) {
   const registryWithoutProtocol = getRegistryWithoutProtocol(domain, repository, accountId, region);
   await runShellCommand(`npm config set ${registryWithoutProtocol}:_authToken ${token} ${userConfig}`, token);
+}
+
+async function deleteNpmToken(domain, repository, accountId, region) {
+  const registryWithoutProtocol = getRegistryWithoutProtocol(domain, repository, accountId, region);
+  await runShellCommand(`npm config delete ${registryWithoutProtocol}:_authToken ${userConfig}`);
 }
 
 async function getTokenFromUserConfig(domain, repository, accountId, region) {
@@ -104,22 +122,22 @@ async function login(domain, repository, scope) {
 }
 
 /*
-** 
+**
 */
 
 async function setProjectRegistryCopyToken(domain, repository, scope, accountId, region) {
   const registryWithoutProtocol = `//${domain}-${accountId}.d.codeartifact.${region}.amazonaws.com/npm/${repository}/`;
   const registry = `https:${registryWithoutProtocol}`;
 
-  await setRegistry(domain, repository, scope, accountId, region);
-  await setAlwaysAuth(domain, repository, accountId, region);
+  await setNpmRegistry(domain, repository, scope, accountId, region);
+  await setNpmAlwaysAuth(domain, repository, accountId, region);
 
   token = process.env.CODEARTIFACT_AUTH_TOKEN ? process.env.CODEARTIFACT_AUTH_TOKEN : await getTokenFromUserConfig(domain, repository, accountId, region)
-  await setToken(domain, repository, accountId, region, token);
+  await setNpmToken(domain, repository, accountId, region, token);
 }
 
 /*
-** 
+**
 */
 
 async function setProjectRegistryGetToken(domain, repository, scope, accountId, region) {
@@ -127,16 +145,29 @@ async function setProjectRegistryGetToken(domain, repository, scope, accountId, 
   const registry = `https:${registryWithoutProtocol}`;
   const userConfig = '--userconfig .npmrc'
 
-  await setRegistry(domain, repository, scope, accountId, region);
-  await setAlwaysAuth(domain, repository, accountId, region);
+  await setNpmRegistry(domain, repository, scope, accountId, region);
+  await setNpmAlwaysAuth(domain, repository, accountId, region);
 
   const token = await getTokenFromAws(domain, accountId);
-  await setToken(domain, repository, accountId, region, token);
-  // await runShellCommand(`npm config set ${registryWithoutProtocol}:_authToken ${token} ${userConfig}`, token);
+  await setNpmToken(domain, repository, accountId, region, token);
+}
+
+/*
+**
+*/
+
+async function deleteRegistry(domain, repository, scope, accountId, region) {
+  const registryWithoutProtocol = `//${domain}-${accountId}.d.codeartifact.${region}.amazonaws.com/npm/${repository}/`;
+  const userConfig = '--userconfig .npmrc'
+
+  await deleteNpmRegistry(scope);
+  await deleteNpmAlwaysAuth(domain, repository, accountId, region);
+  await deleteNpmToken(domain, repository, accountId, region);
 }
 
 module.exports = {
   login: login,
   setProjectRegistryCopyToken: setProjectRegistryCopyToken,
-  setProjectRegistryGetToken: setProjectRegistryGetToken
+  setProjectRegistryGetToken: setProjectRegistryGetToken,
+  deleteRegistry: deleteRegistry
 };

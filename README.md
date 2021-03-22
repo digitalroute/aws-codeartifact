@@ -64,3 +64,11 @@ Will try to create or update a local project config (`.npmrc`) for AWS CodeArtif
 aws-codeartifact registry-aws-token
 ```
 
+#### registry-delete
+
+Will remove the registry from your `.npmrc` file because sometime you dont have this git ignored for example.
+
+```bash
+aws-codeartifact registry-delete
+```
+

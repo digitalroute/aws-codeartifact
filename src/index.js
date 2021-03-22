@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { login, setProjectRegistryCopyToken, setProjectRegistryGetToken } = require('./codeartifact.js');
+const { login, setProjectRegistryCopyToken, setProjectRegistryGetToken, deleteRegistry } = require('./codeartifact.js');
 
 const package = process.env.PACKAGE_FILE ? require(process.env.PACKAGE_FILE) : require( process.cwd() + "/package.json" );
 
@@ -33,9 +33,13 @@ process.argv.slice(2).forEach(async function (arg, index, array) {
     case 'registry-copy-token':
       await setProjectRegistryCopyToken(codeArtifactDomain, codeArtifactRepository, codeArtifactScope, codeArticactAccountId, codeArticactRegion);
       break;
-  
+
     case 'registry-aws-token':
       await setProjectRegistryGetToken(codeArtifactDomain, codeArtifactRepository, codeArtifactScope, codeArticactAccountId, codeArticactRegion);
+      break;
+
+    case 'registry-delete':
+      await deleteRegistry(codeArtifactDomain, codeArtifactRepository, codeArtifactScope, codeArticactAccountId, codeArticactRegion);
       break;
 
     default:
